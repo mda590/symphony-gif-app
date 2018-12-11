@@ -8,4 +8,4 @@ RUN pip3 install -r /app/requirements.txt
 
 WORKDIR /app
 
-ENTRYPOINT ["python3 /app/app.py"]
+CMD ["uwsgi", "--ini", "symphony-gif-app.ini"]

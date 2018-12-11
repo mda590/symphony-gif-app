@@ -1,3 +1,5 @@
 flask
 flask-cors
 giphy_client
+pyopenssl
+uwsgi

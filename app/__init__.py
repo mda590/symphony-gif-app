@@ -68,4 +68,8 @@ def bundle():
     return jsonify(bundle_json)
 
 if __name__ == '__main__':
-    app.run(ssl_context='adhoc')
+    app.run(
+        host='0.0.0.0',
+        port=5000,
+        ssl_context='adhoc'
+    )
