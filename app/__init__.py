@@ -59,8 +59,8 @@ def bundle():
                 "name": "Symphony Gif Search",
                 "description": "This app allows for searching and sharing Gifs within Symphony! Powered by Giphy.",
                 "publisher": "Cloud Engineering",
-                "url": "https://localhost:5000/controller.html",
-                "domain": "localhost"
+                "url": "https://symgif.adorjan.co/controller.html",
+                "domain": "symgif.adorjan.co"
             }
         ]
     }

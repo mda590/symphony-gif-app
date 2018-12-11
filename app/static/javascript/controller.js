@@ -47,7 +47,7 @@ SYMPHONY.remote.hello().then(function(data) {
                     navService.focus("symgif-nav");
                 }
 
-                modulesService.show("symgif", {title: "Symphony Gif Search"}, "symgif:controller", "https://localhost:5000/app.html", {
+                modulesService.show("symgif", {title: "Symphony Gif Search"}, "symgif:controller", "https://symgif.adorjan.co/app.html", {
                     // You must specify canFloat in the module options so that the module can be pinned
                     "canFloat": true,
                 });
@@ -61,7 +61,7 @@ SYMPHONY.remote.hello().then(function(data) {
             link: function(type, articleId) {
                 if(type == "article") {
                     var moduleTitle = "Symphony Gif App: " + articleId;
-                    modulesService.show("symgif-article", {title: moduleTitle}, "symgif:controller", "https://localhost:5000/app.html?article=" + articleId, {
+                    modulesService.show("symgif-article", {title: moduleTitle}, "symgif:controller", "https://symgif.adorjan.co/app.html?article=" + articleId, {
                         "canFloat": true,
                         // Use parentModuleId to open a new module without closing the original module ("symgif")
                         "parentModuleId": "symgif"
