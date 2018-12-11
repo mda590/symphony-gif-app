@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Symphony Gif Search</title>
+
+    <!-- Include Symphony's stylesheet -->
+    <link rel="stylesheet" type="text/css" href="https://symphony.com/resources/api/v1.1/symphony-style.css">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+
+    <style>
+        .hidden {
+                display: none;
+            }
+        </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- <a class="navbar-brand" href="#">Symphony Gif Search</a> -->
+        <form class="form-inline my-2 my-lg-0" method="POST">
+            <div class="col-10">
+                <input class="form-control mr-sm-2 bg-light" type="search" placeholder="Search" name="search-term"
+                    aria-label="Search"></div>
+            <div class="col-1"><button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+            </div>
+            <input type="hidden" value="true" name="searched" />
+        </form>
+    </nav>
+    <div class="container">
+        <div class="row">&nbsp;</div>
+        {% if searched != '' %}
+        <div class="row">
+            <div class="col">Search Term: <strong>{{ term }}</strong></div>
+        </div>
+
+        {% for gif in giphy_gifs %}
+
+        {% if loop.index == 1 %}
+        <div class="row mt-4">
+            {% endif %}
+            <div class="col-sm" align="center">
+                <img class="my-3" src="{{ gif.images.fixed_width.url }}" title="{{ gif.slug }}" alt="{{ gif.slug }}" /><br />
+                <button type="button" id="{{ gif.id }}" class="btn btn-primary btn-sm">Share!</button>
+            </div>
+            {% if loop.index % 4 == 0 %}
+        </div>
+        <div class="row mt-4">
+            {% endif %}
+            {% if loop.index == giphy_gifs_len %}
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        <div class="row">
+            <div class="col">Enter a search term in the field above to find a gif to share!</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- This div will be displayed when the About this App menu item is clicked. -->
+    <div id="about-symgif-world-app" class="hidden">
+        <h2>About this App</h2>
+        <p>This app allows searching and sharing Gifs with Symphony contacts. Powered by Giphy.</p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <!-- Include Symphony's Client Extension API javascript -->
+    <script type="text/javascript" src="https://www.symphony.com/resources/api/v1.0/symphony-api.js" charset="utf-8"></script>
+    <!-- Include the app view javascript. This file is generated when running the npm webpack commands.  -->
+    <!-- <script type="text/javascript" src="{{ js }}" charset="utf-8"></script> -->
+
+    <!-- Including the JS inline (vs. external file) so I can Jinja template it with the rest of the HTML. -->
+    <script>
+        // Create our own local service pertaining to the application module
+        // We have namespaced local services with "symgif:"
+        var symgifAppService = SYMPHONY.services.register("symgif:app");
+
+        SYMPHONY.remote.hello().then(function (data) {
+
+            // Set the theme of the app module
+            var themeColor = data.themeV2.name;
+            var themeSize = data.themeV2.size;
+            // You must add the symphony-external-app class to the body element
+            document.body.className = "symphony-external-app " + themeColor + " " + themeSize;
+
+            SYMPHONY.application.connect("symgif", ["modules", "applications-nav", "ui", "share"], ["symgif:app"]).then(function (response) {
+
+                // The userReferenceId is an anonymized random string that can be used for uniquely identifying users.
+                // The userReferenceId persists until the application is uninstalled by the user. 
+                // If the application is reinstalled, the userReferenceId will change.
+                var userId = response.userReferenceId;
+
+                // Subscribe to Symphony's services
+                var modulesService = SYMPHONY.services.subscribe("modules");
+                var uiService = SYMPHONY.services.subscribe("ui");
+                var shareService = SYMPHONY.services.subscribe("share");
+
+                // UI: Listen for theme change events
+                uiService.listen("themeChangeV2", function () {
+                    SYMPHONY.remote.hello().then(function (theme) {
+                        themeColor = theme.themeV2.name;
+                        themeSize = theme.themeV2.size;
+                        document.body.className = "symphony-external-app " + themeColor + " " + themeSize;
+                    });
+                });
+
+                // MODULE: Add a menu item to our module
+                modulesService.addMenuItem("symgif", "About Symphony Gif App", "symgif-menu-item");
+                modulesService.setHandler("symgif", "symgif:app");
+
+                // SHARE: Trigger Symphony's share modal when the "Share" button is clicked
+                {% if searched != '' %}
+                {% for gif in giphy_gifs %}
+                var shareButton = document.getElementById("{{ gif.id }}");
+                shareButton.addEventListener("click", function () {
+                    var date = new Date().getTime() / 1000;
+
+                    var presentationML = `
+                        <entity>
+                        <img src="{{ gif.images.original.url }}" />
+                        </entity>
+                    `;
+                    var entityJSON = {
+                        date: date,
+                        thumbnail: '',
+                        results: JSON.stringify({ number: 'number', time: 'time' }),
+                        time: '',
+                        number: ''
+                    };
+                    var data = {
+                        plaintext: `GIF IMAGE\n`,
+                        presentationML: presentationML,
+                        entityJSON: entityJSON,
+                        entity: {},
+                        format: 'com.symphony.messageml.v2',
+                        inputAutofill: '',
+                    }
+                    shareService.share('com.symfuny.invite.won', data);
+                });
+                {% endfor %}
+                {% endif %}
+
+                // Implement methods on the application module service
+                symgifAppService.implement({
+                    // If the menu item is selected, display the About text 
+                    menuSelect: function (itemId) {
+                        if (itemId == "symgif-menu-item") {
+                            document.getElementById("about-symgif-world-app").className = "";
+                        }
+                    }
+                });
+            }.bind(this))
+        }.bind(this));
+
+    </script>
+</body>
+
+</html>
